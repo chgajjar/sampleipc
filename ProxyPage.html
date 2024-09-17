@@ -56,6 +56,8 @@
 
 <script type="text/javascript">
 
+    let handle = null;
+
     // message handler to handle messages from Finesse Gadget that need to pass to listeners.
     function postMsgReceiver(event) {
 
@@ -96,10 +98,22 @@
     }
 
 
-    function message_broadcast(message) {
+    async function message_broadcast(message) {
+        
+        if (!handle) {
+            try {
+              handle = await document.requestStorageAccess({localStorage: true});
+            } catch (err) {
+                console.log("Access was not granted");
+              return;
+            }
+          }
+
 		//localStorage.setItem('messageFromFinesse',JSON.stringify(message));
-		localStorage.setItem('messageFromFinesse',message);
-		localStorage.removeItem('messageFromFinesse');
+		handle.localStorage.setItem('messageFromFinesse',message);
+        console.log("Item Set");
+		handle.localStorage.removeItem('messageFromFinesse');
+        console.log("Item Removed");
     }
 		
 	// add listener for messages from Finesse Gadget web page
