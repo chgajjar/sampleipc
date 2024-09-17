@@ -95,22 +95,11 @@
 
     }
 
-    let handle = null;
-    async function message_broadcast(message) {
-        
-        if (!handle) {
-            try {
-              handle = await document.requestStorageAccess({localStorage: true});
-            } catch (err) {
-                console.log("Access was not granted");
-              return;
-            }
-          }
-
+    function message_broadcast(message) {
 		//localStorage.setItem('messageFromFinesse',JSON.stringify(message));
-		handle.localStorage.setItem('messageFromFinesse',message);
+		localStorage.setItem('messageFromFinesse',message);
         console.log("Item Set");
-		handle.localStorage.removeItem('messageFromFinesse');
+		localStorage.removeItem('messageFromFinesse');
         console.log("Item Removed");
     }
 		
