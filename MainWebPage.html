@@ -1,0 +1,1138 @@
+<!--
+****************************************************************************
+Cisco Finesse - IPC using Local Storage Sample Web Page
+Cisco Systems, Inc.
+http://www.cisco.com/
+http://developer.cisco.com/web/finesse
+****************************************************************************
+
+I. Disclaimer
+-------------------------------------------------------------------------------
+
+   This Sample Web Page is intended to serve as an example of the steps
+   necessary to building an application using the Finesse IPC Local Storage API
+   Javascript Library.
+      
+   This is only a sample and is NOT intended to be a production quality
+   and will not be supported as such.  It is NOT guaranteed to
+   be bug free. It is merely provided as a guide for a programmer to see
+   how to initialize and set up handlers for user and dialog updates.
+   
+   The sample contains the following files:
+
+         MainWebPage.css
+         MainWebPage.html
+         resources/icons/
+            logout.png
+            ready.png
+            notready.png
+            workready.png
+            makecall.png
+            answer.png
+            drop.png
+            hold.png
+            retrieve.png
+            makeconsultcall.png
+            transfer_sst.png
+            conference.png
+            transfer.png
+            
+
+
+
+
+II. Requirements
+-------------------------------------------------------------------------------
+The sample requires that the FinesseIPCLSapi is located in the same directory, and that the 
+IPC Gadget and Proxy Page are deployed.
+
+
+III. Usage
+-------------------------------------------------------------------------------
+   This sample web page is made available to Cisco partners and customers as
+   a convenience to help minimize the cost of Cisco Finesse customizations.
+
+-->
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="MainWebPage.css" type="text/css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+    <script src="FinesseIPCLSapi.js?version=10"></script>
+</head>
+
+<body>
+    <h2>Local Storage Client</h2>
+    <div id='AgentState'>Agent State: LOGOUT</div>
+    <div id="toolbar">
+        <div id="AgentControl">
+            <fieldset>
+                <legend>Agent Control</legend>
+                <button title="Logout" id="LogoutBtn" disabled><img src="./resources/icons/logout.png" /></button>
+                <button title="Ready" id="ReadyBtn" onclick="cadi.modules.FinesseIPCLSAPI.ready()" disabled><img src="./resources/icons/ready.png" /></button>
+                <button title="Not Ready" id="NotReadyBtn" disabled><img src="./resources/icons/notready.png" /></button>
+                <button title="After Call Work" id="ACWBtn" onclick="cadi.modules.FinesseIPCLSAPI.workReady()" disabled><img src="./resources/icons/workready.png" /></button>
+            </fieldset>
+        </div>
+        <div id="CallControl">
+            <fieldset>
+                <legend>Call Control</legend>
+                <button title="MakeCall" id="MakeCallBtn" disabled><img src="./resources/icons/makecall.png" /></button>
+                <button title="Answer" id="AnswerBtn" disabled onclick="cadi.modules.FinesseIPCLSAPI.answer()"><img src="./resources/icons/answer.png" /></button>
+                <button title="Drop" id="DropBtn" disabled onclick="cadi.modules.FinesseIPCLSAPI.drop()"><img src="./resources/icons/drop.png" /></button>
+                <button title="Hold" id="HoldBtn" disabled onclick="cadi.modules.FinesseIPCLSAPI.hold()"><img src="./resources/icons/hold.png" /></button>
+                <button title="Retrieve" id="RetrieveBtn" disabled onclick="cadi.modules.FinesseIPCLSAPI.retrieve()"><img src="./resources/icons/retrieve.png" /></button>
+                <button title="ConsultCall" id="ConsultCallBtn" disabled><img src="./resources/icons/makeconsultcall.png" /></button>
+                <button title="DirectTransfer" id="SSTTransferBtn" disabled><img src="./resources/icons/transfer_sst.png" /></button>
+                <button title="Conference" id="ConferenceBtn" disabled onclick="cadi.modules.FinesseIPCLSAPI.conference()"><img src="./resources/icons/conference.png" /></button>
+                <button title="Transfer" id="TransferBtn" disabled onclick="cadi.modules.FinesseIPCLSAPI.transfer()"><img src="./resources/icons/transfer.png" /></button>
+                <button title="Wrapup" id="WrapupBtn" disabled><img src="./resources/icons/wrapup.png" /></button>
+                <!-- <button title="Alternate" id="AlternateBtn" disabled>Alternate</button>
+            <button title="Reconnect" id="ReconnectBtn" disabled>Reconnect</button>
+            -->
+            </fieldset>
+        </div>
+        <div id="not-ready-dialog-form" title="Select Reason for NotReady">
+            <form>
+                <fieldset>
+                    <select id="notReadyReasonList" size="7">
+             </select>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+        <div id="signout-dialog-form" title="Select Reason for Signing Out">
+            <form>
+                <fieldset>
+                    <select id="signoutReasonList" size="7">
+             </select>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+        <div id="wrapup-dialog-form" title="Select Wrapup Code">
+            <form>
+                <fieldset>
+                    <select id="wrapupReasonList" size="7">
+             </select>
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                </fieldset>
+            </form>
+        </div>
+
+        <div id="dial-dialog-form" title="Dial Dialog">
+            <form>
+                <div id="col1">
+                    <div id="col11">
+                        <label>Recent Calls</label>
+                        <br />
+                        <select id="recentCallList" size="5">
+                             </select>
+                    </div>
+                    <div id="col12">
+                        <label>Phone Book</label>
+                        <br />
+                        <select id="phoneBookList">
+                                    <!-- <option>Test Phone Book</option>
+                                    <option>Team Phone Book</option>
+                                    <option>Global Phone Book</option> -->
+                             </select>
+                    </div>
+                    <div id="col13">
+                        <br />
+                        <input type="text" name="searchPhoneBook" id="searchPhoneBook" placeholder="Search Content" class="text ui-widget-content ui-corner-all icon" />
+                    </div>
+                    <div>
+                        <table id="phoneBookTable" class="sortable search-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">First Name</th>
+                                    <th scope="col">Last Name</th>
+                                    <th scope="col">Phone Num</th>
+                                    <th scope="col">Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody id="phoneBookBody">
+                                <tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div id="col2">
+                    <!-- <fieldset> -->
+                    <label for="numberToDial">Number</label>
+                    <input type="text" name="numberToDial" id="numberToDial" class="text ui-widget-content ui-corner-all">
+                    <table class="dialpad">
+                        <tr>
+                            <td>
+                                <div class="button"><span class="number">1</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters">ABC</span><span class="number">2</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters">DEF</span> <span class="number">3</span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="button"><span class="letters">GHI</span> <span class="number">4</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters">JKL</span> <span class="number">5</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters">NMO</span> <span class="number">6</span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="button"><span class="letters-4">PQRS</span><span class="number">7</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters">TUV</span> <span class="number">8</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters-4">WXYZ</span> <span class="number">9</span></div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="button"><span class="number">*</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="letters-4">OPER</span><span class="number">0</span></div>
+                            </td>
+                            <td>
+                                <div class="button"><span class="number">#</span></div>
+                            </td>
+                        </tr>
+                    </table>
+
+                    <!-- Allow form submission with keyboard without duplicating the dialog button -->
+                    <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
+                    <!-- </fieldset> -->
+                </div>
+            </form>
+        </div>
+        <div id='Dialogs'>
+            <fieldset>
+                <legend>Dialogs</legend>
+                <table id="dialogsTable">
+                    <thead>
+                        <tr>
+                            <th>Dialog ID</th>
+                            <th>ANI</th>
+                            <th>DNIS</th>
+                            <th>Call Type</th>
+                            <th>State</th>
+                            <th>Dialed Number</th>
+                            <th>Call Variable 1</th>
+                            <th>Call Variable 2</th>
+                            <th>Call Variable 3</th>
+                        </tr>
+                    </thead>
+                    <tbody id='myBody'>
+                        <!-- <tr>
+                        <td id='dialogId'></td>
+                        <td id='ani'></td>
+                        <td id='dnis'></td>
+                        <td id='callType'></td>
+                        <td id='callState'></td>
+                        <td id='dialedNumber'></td>
+                        <td id='callVar1'></td>
+                        <td id='callVar2'></td>
+                        <td id='callVar3'></td>
+                    </tr> -->
+                    </tbody>
+                </table>
+            </fieldset>
+        </div>
+    </div>
+</body>
+<script>
+    'use strict';
+    var dialogs = [];
+
+    function OnEventCallback(msgObj) {
+
+        if (msgObj !== undefined) {
+            switch (msgObj.messageType) {
+                case 'connection-status':
+                    if (msgObj.connectionStatus === 'Disconnected') {
+                        $('#AgentState').text("Agent State: Unknown - Disconnected");
+                        $('#LogoutBtn').prop("disabled", true);
+                        $('#ReadyBtn').prop("disabled", true);
+                        $('#NotReadyBtn').prop("disabled", true);
+                        $('#ACWBtn').prop("disabled", true);
+                        $('#MakeCallBtn').prop("disabled", true);
+                        alert("The Finesse Desktop has lost the connection to the Finesse Server. Please wait while it is reconnected.");
+                    }
+                    else if (msgObj.connectionStatus === 'Missed-Heartbeats') {
+                        $('#AgentState').text("Agent State: Unknown - Missed Heartbeats");
+                        $('#LogoutBtn').prop("disabled", true);
+                        $('#ReadyBtn').prop("disabled", true);
+                        $('#NotReadyBtn').prop("disabled", true);
+                        $('#ACWBtn').prop("disabled", true);
+                        $('#MakeCallBtn').prop("disabled", true);
+                        alert("The connection to the Finesse Desktop is not responding. Please check the Finesse Desktop window to ensure it is still running.");
+                    }
+                    break;
+                 case 'desktop-status':
+                    if (msgObj.status === 'hidden') {
+                        alert("An attempt to minimize the Finesse Desktop has been made. Please do not attempt to Minimize the Finesse Desktop. It causes performance issues.");
+                    }
+                    break;
+                 case 'user-update':
+                    if (msgObj.user.state === 'NOT_READY' && msgObj.user.reasonCode !== undefined)
+                        $('#AgentState').text("Agent State: " + msgObj.user.state + " - " + msgObj.user.reasonCode.label);
+                    else
+                        $('#AgentState').text("Agent State: " + msgObj.user.state);
+
+                    switch (msgObj.user.state) {
+                        case 'LOGOUT':
+                            $('#LogoutBtn').prop("disabled", true);
+                            $('#ReadyBtn').prop("disabled", true);
+                            $('#NotReadyBtn').prop("disabled", true);
+                            $('#ACWBtn').prop("disabled", true);
+                            $('#MakeCallBtn').prop("disabled", true);
+                            break;
+                        case 'READY':
+                            $('#LogoutBtn').prop("disabled", true);
+                            $('#ReadyBtn').prop("disabled", true);
+                            $('#NotReadyBtn').prop("disabled", false);
+                            $('#ACWBtn').prop("disabled", true);
+                            $('#MakeCallBtn').prop("disabled", true);
+                            break;
+                        case 'NOT_READY':
+                            $('#LogoutBtn').prop("disabled", false);
+                            $('#ReadyBtn').prop("disabled", false);
+                            $('#NotReadyBtn').prop("disabled", false);
+                            $('#ACWBtn').prop("disabled", true);
+                            $('#MakeCallBtn').prop("disabled", false);
+                            break;
+                        case 'WORK_READY':
+                            $('#LogoutBtn').prop("disabled", true);
+                            $('#ReadyBtn').prop("disabled", false);
+                            $('#NotReadyBtn').prop("disabled", false);
+                            $('#ACWBtn').prop("disabled", true);
+                            $('#MakeCallBtn').prop("disabled", true);
+                            break;
+                        case 'WORK':
+                            $('#LogoutBtn').prop("disabled", true);
+                            $('#ReadyBtn').prop("disabled", false);
+                            $('#NotReadyBtn').prop("disabled", false);
+                            $('#ACWBtn').prop("disabled", true);
+                            $('#MakeCallBtn').prop("disabled", true);
+                            break;
+                        case 'HOLD':
+                        case 'RESERVED':
+                        case 'TALKING':
+                            $('#LogoutBtn').prop("disabled", true);
+                            $('#ReadyBtn').prop("disabled", false);
+                            $('#NotReadyBtn').prop("disabled", false);
+                            if (cadi.modules.FinesseIPCLSAPI.getWrapUpModeOnIncoming() === 'OPTIONAL')
+                                $('#ACWBtn').prop("disabled", false);
+                            else
+                                $('#ACWBtn').prop("disabled", true);
+
+                            $('#MakeCallBtn').prop("disabled", false);
+                            break;
+                    }
+
+                    break;
+                case 'new-dialog':
+                case 'dialog-update':
+
+                    updateCallButtonEnablement(msgObj.dialog);
+                    var myParticipant = cadi.modules.FinesseIPCLSAPI.getMyParticipant(msgObj.dialog);
+                    // Check to see if we found our participant. If not set the callState to unknown. 
+                    let callState;                
+                    if (myParticipant !== undefined) {
+                        callState = myParticipant.state;
+                       } else {
+                        callState = "Unknown";
+                    }
+    
+
+                    // check to see if the dialog is list of dialogs, and if so replace the existing. 
+                    if (dialogs.length > 0) {
+                        let index;
+                        let found = false;
+                        for (var x in dialogs) {
+                            // Let's loop the dialog collection looking for the Active Dialog
+
+                            if (dialogs[x].id === msgObj.dialog.id) {
+                                // replace the dialog
+                                dialogs[x] = msgObj.dialog;
+                                index = x;
+                                found = true;
+                            }
+                        }
+
+                        if (!found) {
+                            dialogs.push(msgObj.dialog);
+                            index = dialogs.length - 1;
+                        } else {
+                            document.getElementById('myBody').deleteRow(index);
+                        }
+
+                        var tableBody = document.getElementById('myBody');
+                        var row = tableBody.insertRow(index);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        var cell5 = row.insertCell(4);
+                        var cell6 = row.insertCell(5);
+                        var cell7 = row.insertCell(6);
+                        var cell8 = row.insertCell(7);
+                        var cell9 = row.insertCell(8);
+                        cell1.innerHTML = msgObj.dialog.id;
+                        cell2.innerHTML = msgObj.dialog.fromAddress;
+                        cell3.innerHTML = msgObj.dialog.mediaProperties.DNIS;
+                        cell4.innerHTML = msgObj.dialog.mediaProperties.callType;
+                        cell5.innerHTML = callState;
+                        cell6.innerHTML = msgObj.dialog.mediaProperties.dialedNumber;
+                        cell7.innerHTML = msgObj.dialog.mediaProperties.callvariables.CallVariable[0].value;
+                        cell8.innerHTML = msgObj.dialog.mediaProperties.callvariables.CallVariable[1].value;
+                        cell9.innerHTML = msgObj.dialog.mediaProperties.callvariables.CallVariable[2].value;
+
+
+                    } else {
+                        dialogs.push(msgObj.dialog);
+                        var currSelectedDialog = msgObj.dialog;
+                        cadi.modules.FinesseIPCLSAPI.setCurrSelectedDialog(currSelectedDialog);
+                        var tableBody = document.getElementById('myBody');
+                        var row = tableBody.insertRow(0);
+                        var cell1 = row.insertCell(0);
+                        var cell2 = row.insertCell(1);
+                        var cell3 = row.insertCell(2);
+                        var cell4 = row.insertCell(3);
+                        var cell5 = row.insertCell(4);
+                        var cell6 = row.insertCell(5);
+                        var cell7 = row.insertCell(6);
+                        var cell8 = row.insertCell(7);
+                        var cell9 = row.insertCell(8);
+                        cell1.innerHTML = msgObj.dialog.id;
+                        cell2.innerHTML = msgObj.dialog.fromAddress;
+                        cell3.innerHTML = msgObj.dialog.mediaProperties.DNIS;
+                        cell4.innerHTML = msgObj.dialog.mediaProperties.callType;
+                        cell5.innerHTML = callState;
+                        cell6.innerHTML = msgObj.dialog.mediaProperties.dialedNumber;
+                        cell7.innerHTML = msgObj.dialog.mediaProperties.callvariables.CallVariable[0].value;
+                        cell8.innerHTML = msgObj.dialog.mediaProperties.callvariables.CallVariable[1].value;
+                        cell9.innerHTML = msgObj.dialog.mediaProperties.callvariables.CallVariable[2].value;
+                    }
+ 
+                    $('#myBody').on('click', 'tr', function() {
+                        var dialogId = $(this).find("td")[0].innerHTML;
+                        if (dialogId !== undefined) {
+                            var currSelectedDialog = cadi.modules.FinesseIPCLSAPI.getDialogWithId(dialogId);
+                            cadi.modules.FinesseIPCLSAPI.setCurrSelectedDialog(currSelectedDialog);
+                            updateCallButtonEnablement(currSelectedDialog);
+                            $("#myBody tr").removeClass("currSelected");
+                            $(this).addClass("currSelected");
+                        }
+                    });
+
+
+                    break;
+
+                case 'end-dialog':
+                    if (dialogs.length > 0) {
+                        let index;
+
+                        for (var x in dialogs) {
+                            // Let's loop the dialog collection looking for the Active Dialog
+
+                            if (dialogs[x].id === msgObj.dialog.id) {
+                                // replace the dialog
+                                index = x;
+                            }
+                        }
+
+                        // remove the dialog from the list.
+                        dialogs.splice(index, 1);
+                        document.getElementById('myBody').deleteRow(index);
+
+
+                    }
+
+                    $('#MakeCallBtn').prop("disabled", true);
+                    $('#AnswerBtn').prop("disabled", true);
+                    $('#DropBtn').prop("disabled", true);
+                    $('#HoldBtn').prop("disabled", true);
+                    $('#RetrieveBtn').prop("disabled", true);
+                    $('#ConferenceBtn').prop("disabled", true);
+                    $('#TransferBtn').prop("disabled", true);
+                    $('#ConsultCallBtn').prop("disabled", true);
+                    $('#SSTTransferBtn').prop("disabled", true);
+                    $('#WrapupBtn').prop("disabled", true);
+                  break;
+
+                case 'phonebooks':
+
+                    var phoneBookCollection = msgObj.phoneBooks.PhoneBook,
+                        id, restPhoneBook, restContact, contact, restContacts, i, selectedSet;
+
+                    if (msgObj.phoneBooks !== undefined && msgObj.phoneBooks !== null) {
+                        selectedSet = false;
+
+                        for (id in phoneBookCollection) {
+                            restPhoneBook = phoneBookCollection[id];
+                            if (selectedSet) {
+                                $('#phoneBookList').append('<option  value="' + id + '">' + restPhoneBook.name + '</option>');
+                            } else {
+                                $('#phoneBookList').append('<option  value="' + id + '" selected >' + restPhoneBook.name + '</option>');
+
+                                selectedSet = true;
+
+                                // loop contacts within each phonebook
+                                restContacts = restPhoneBook.contacts;
+                                if (restContacts !== null && restContacts.Contact) {
+                                    restContacts = restContacts.Contact;
+                                    // if only 1 contact in the phonebook, it will show up as a single object instead of an array
+                                    // making it a 1 element array keeps it simple
+                                    if (!(restContacts instanceof Array)) {
+                                        restContacts = [restContacts];
+                                    }
+                                    //html = "";
+                                    for (i = 0; i < restContacts.length; i++) {
+                                        restContact = restContacts[i];
+                                        contact = {
+                                            phoneBook: restPhoneBook.name,
+                                            uri: restContact.uri,
+                                            lastName: restContact.lastName,
+                                            firstName: restContact.firstName,
+                                            phoneNumber: restContact.phoneNumber,
+                                            description: restContact.description
+                                        };
+                                        // display the contact
+                                        // html += '<div>';
+                                        // html += contact.lastName + ", " + contact.firstName + " " + contact.phoneNumber;
+                                        // html += '</div>';
+                                        $('#phoneBookTable > tbody:last').append('<tr class="clickable-row"><td>' + contact.firstName + '</td><td>' + contact.lastName + '</td><td class="phoneNum">' + contact.phoneNumber + '</td><td>' + restContact.description + '</td></tr>');
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    break;
+                case 'api-error':
+                    alert("APIError message received: ErrorCode = " + msgObj.apiError.ErrorData + ", ErrorType = " + msgObj.apiError.ErrorType + ", ErrorMsg = " + msgObj.apiError.ErrorMessage);
+                    break;
+                case 'notready-reasons':
+                case 'signout-reasons':
+                case 'wrapup-reasons':
+                    // just ignore the event for now.
+                    break;
+                default:
+                    console.log("Received unknown message: " + msgObj.messageType);
+            }
+        }
+    }
+
+
+    function updateCallButtonEnablement(dialog) {
+
+        // Initialize all the buttons to disabled.
+        $('#MakeCallBtn').prop("disabled", true);
+        $('#AnswerBtn').prop("disabled", true);
+        $('#DropBtn').prop("disabled", true);
+        $('#HoldBtn').prop("disabled", true);
+        $('#RetrieveBtn').prop("disabled", true);
+        $('#ConferenceBtn').prop("disabled", true);
+        $('#TransferBtn').prop("disabled", true);
+        $('#ConsultCallBtn').prop("disabled", true);
+        $('#SSTTransferBtn').prop("disabled", true);
+        $('#WrapupBtn').prop("disabled", true);
+        //$('#AlternateBtn').prop("disabled",true);  
+        //$('#ReconnectBtn').prop("disabled",true);  
+
+        let myParticipant = cadi.modules.FinesseIPCLSAPI.getMyParticipant(dialog);
+
+        if (myParticipant !== undefined) {
+            let myActions = myParticipant.actions.action;
+
+            // Check to see if there are more than one action, which is provided in an Array. If not,
+            // the myActions will on be an object. 
+            if (Array.isArray(myActions)) {
+                for (var x in myActions) {
+
+                    switch (myActions[x]) {
+
+                        case 'ANSWER':
+                            $('#AnswerBtn').prop("disabled", false);
+                            break;
+                        case 'CONFERENCE':
+                            $('#ConferenceBtn').prop("disabled", false);
+                            break;
+                        case 'CONSULT_CALL':
+                            $('#ConsultCallBtn').prop("disabled", false);
+                            break;
+                        case 'DROP':
+                            $('#DropBtn').prop("disabled", false);
+                            break;
+                        case 'HOLD':
+                            $('#HoldBtn').prop("disabled", false);
+                            break;
+                        case 'MAKE_CALL':
+                            $('#MakeCallBtn').prop("disabled", false);
+                            break;
+                            //case 'DTMF':
+                        case 'RETRIEVE':
+                            $('#RetrieveBtn').prop("disabled", false);
+                            break;
+                        case 'TRANSFER':
+                            $('#TransferBtn').prop("disabled", false);
+                            break;
+                        case 'TRANSFER_SST':
+                            $('#SSTTransferBtn').prop("disabled", false);
+                            break;
+                        case 'UPDATE_CALL_DATA':
+                            let callType = dialog.mediaProperties.callType;
+                            switch(callType) {
+                                case 'ACD_IN':
+                                case 'PREROUTE_ACD_IN':
+                                case 'PREROUTE_DIRECT_AGENT':
+                                case 'TRANSFER':
+                                    {
+                                    let wrapupMode = cadi.modules.FinesseIPCLSAPI.getWrapUpModeOnIncoming();
+                                    if (wrapupMode !== 'NOT_ALLOWED')
+                                        $('#WrapupBtn').prop("disabled", false);
+                                    }
+                                    break;
+                            }
+
+                            break;
+                            //$('#AlternateBtn').prop("disabled",true);  
+                            //$('#ReconnectBtn').prop("disabled",true);  
+                    }
+                }
+            } else {
+                // there is only a single action for the participant
+                switch (myActions) {
+
+                    case 'ANSWER':
+                        $('#AnswerBtn').prop("disabled", false);
+                        break;
+                    case 'CONFERENCE':
+                        $('#ConferenceBtn').prop("disabled", false);
+                        break;
+                    case 'CONSULT_CALL':
+                        $('#ConsultCallBtn').prop("disabled", false);
+                        break;
+                    case 'DROP':
+                        $('#DropBtn').prop("disabled", false);
+                        break;
+                    case 'HOLD':
+                        $('#HoldBtn').prop("disabled", false);
+                        break;
+                    case 'MAKE_CALL':
+                        $('#MakeCallBtn').prop("disabled", false);
+                        break;
+                        //case 'DTMF':
+                    case 'RETRIEVE':
+                        $('#RetrieveBtn').prop("disabled", false);
+                        break;
+                    case 'TRANSFER':
+                        $('#TransferBtn').prop("disabled", false);
+                        break;
+                    case 'TRANSFER_SST':
+                        $('#SSTTransferBtn').prop("disabled", false);
+                        break;
+                    case 'UPDATE_CALL_DATA':
+                        let callType = dialog.mediaProperties.callType;
+                        switch(callType) {
+                            case 'ACD_IN':
+                            case 'PREROUTE_ACD_IN':
+                            case 'PREROUTE_DIRECT_AGENT':
+                            case 'TRANSFER':
+                                {
+                                let wrapupMode = cadi.modules.FinesseIPCLSAPI.getWrapUpModeOnIncoming();
+                                if (wrapupMode !== 'NOT_ALLOWED')
+                                    $('#WrapupBtn').prop("disabled", false);
+                                }
+                                break;
+                        }
+
+                        break;
+                       //$('#AlternateBtn').prop("disabled",true);  
+                        //$('#ReconnectBtn').prop("disabled",true);  
+                }
+
+            }
+        }
+        else {
+            console.log("updateCallButtonEnablement: myParticipant is undefined. Cannot determine valid Actions.")
+        }
+
+    }
+
+
+    // Functionality for the NotReadyReasonCode Dialog
+    $(function() {
+        var dialog, form, dialogOpen,
+
+            notReadyReasonList = $("#notReadyReasonList"),
+            allFields = $([]).add(notReadyReasonList);
+
+
+        function setNotReady() {
+            allFields.removeClass("ui-state-error");
+            var reasonCodeId = $("#notReadyReasonList").val();
+
+            cadi.modules.FinesseIPCLSAPI.notReady({
+                'reasonCodeId': reasonCodeId
+            });
+
+            dialog.dialog("close");
+            dialogOpen = false;
+
+            return true;
+        }
+
+        dialog = $("#not-ready-dialog-form").dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Ok": setNotReady,
+                Cancel: function() {
+                    dialog.dialog("close");
+                    dialogOpen = false;
+                }
+            },
+            close: function() {
+                form[0].reset();
+                allFields.removeClass("ui-state-error");
+                dialogOpen = false;
+            }
+        });
+
+        form = dialog.find("form").on("submit", function(event) {
+            event.preventDefault();
+            setNotReady();
+        });
+
+        $("#NotReadyBtn").on("click", function() {
+            var notReadyReasons = cadi.modules.FinesseIPCLSAPI.getNotReadyReasons();
+
+            if ($.isArray(notReadyReasons) && notReadyReasons.length > 0) {
+                $("#notReadyReasonList").empty();
+
+                // It is an array. So loop the array to retrieve the NotReady Reason Codes.
+                var idx;
+                for (idx = 0; idx < notReadyReasons.length; idx++) {
+                    var reason = notReadyReasons[idx];
+                    if (reason !== null && reason !== undefined)
+                        $('#notReadyReasonList').append('<option  value="' + reason.id + '">' + reason.label + '</option>');
+                }
+
+                //Check to make sure the list has anything, if not don't show the dialog 
+                if ($('#notReadyReasonList').has('option').length > 0) {
+
+                    dialogOpen = true;
+                    dialog.dialog("open");
+                } else {
+                    setNotReady();
+
+                }
+            } else {
+                setNotReady();
+            }
+        });
+
+    }); // end of NotReadyReasonCode Dialog
+
+    // Functionality for the SignoutReasonCode Dialog
+    $(function() {
+        var dialog, form, dialogOpen,
+
+            signoutReasonList = $("#signoutReasonList"),
+            allFields = $([]).add(signoutReasonList);
+
+
+        function doLogout() {
+            allFields.removeClass("ui-state-error");
+            var reasonCodeId = $("#signoutReasonList").val();
+
+            cadi.modules.FinesseIPCLSAPI.logout({
+                'reasonCodeId': reasonCodeId
+            });
+
+            dialog.dialog("close");
+            dialogOpen = false;
+
+            return true;
+        }
+
+        dialog = $("#signout-dialog-form").dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Ok": doLogout,
+                Cancel: function() {
+                    dialog.dialog("close");
+                    dialogOpen = false;
+                }
+            },
+            close: function() {
+                form[0].reset();
+                allFields.removeClass("ui-state-error");
+                dialogOpen = false;
+            }
+        });
+
+        form = dialog.find("form").on("submit", function(event) {
+            event.preventDefault();
+            doLogout();
+        });
+
+        $("#LogoutBtn").on("click", function() {
+            var signoutReasons = cadi.modules.FinesseIPCLSAPI.getSignoutReasons();
+
+            if ($.isArray(signoutReasons) && signoutReasons.length > 0) {
+                $("#signoutReasonList").empty();
+
+                // It is an array. So loop the array to retrieve the NotReady Reason Codes.
+                var idx;
+                for (idx = 0; idx < signoutReasons.length; idx++) {
+                    var reason = signoutReasons[idx];
+                    if (reason !== null && reason !== undefined)
+                        $('#signoutReasonList').append('<option  value="' + reason.id + '">' + reason.label + '</option>');
+                }
+
+                //Check to make sure the list has anything, if not don't show the dialog 
+                if ($('#signoutReasonList').has('option').length > 0) {
+                    dialogOpen = true;
+                    dialog.dialog("open");
+                } else {
+                    doLogout();
+                }
+            } else {
+                doLogout();
+            }
+
+        });
+
+    }); // end of SignoutReasonCode Dialog
+
+    // Dial Dialog Javascript   
+    $(function() {
+        var dialog, form, cursorPos, dialogOpen, typeOfDial = 'MAKE_CALL',
+            numberToDial = $("#numberToDial"),
+            allFields = $([]).add(numberToDial);
+
+
+        function dialNumber() {
+            allFields.removeClass("ui-state-error");
+
+            var numToDial = numberToDial.val().trim();
+
+            if (numToDial && numToDial.length !== 0) {
+                // remove the dashes from the number "-" and call the makeCall method.
+                switch (typeOfDial) {
+
+                    case 'MAKE_CALL':
+                        cadi.modules.FinesseIPCLSAPI.makeCall({
+                            numberToDial: numToDial.replace(/-/g, "")
+                        });
+                        break;
+                    case 'CONSULT_CALL':
+                        cadi.modules.FinesseIPCLSAPI.makeConsultCall({
+                            numberToDial: numToDial.replace(/-/g, "")
+                        });
+                        break;
+                    case 'TRANSFER_SST':
+                        cadi.modules.FinesseIPCLSAPI.singleStepTransferCall({
+                            numberToDial: numToDial.replace(/-/g, "")
+                        });
+                        break;
+                }
+
+                // Add to the recent calls list
+                $('#recentCallList').append($('<option>', {
+                    value: numToDial,
+                    text: numToDial
+                }));
+            }
+
+            dialog.dialog("close");
+            dialogOpen = false;
+
+            return true;
+
+        }
+
+        dialog = $("#dial-dialog-form").dialog({
+            autoOpen: false,
+            height: 500,
+            width: 780,
+            modal: true,
+            buttons: {
+                "Dial": dialNumber,
+                Cancel: function() {
+                    dialog.dialog("close");
+                    dialogOpen = false;
+                }
+            },
+            close: function() {
+                form[0].reset();
+                allFields.removeClass("ui-state-error");
+                dialogOpen = false;
+            }
+        });
+
+        form = dialog.find("form").on("submit", function(event) {
+            event.preventDefault();
+            dialNumber();
+        });
+
+        $("#MakeCallBtn").on("click", function() {
+            typeOfDial = 'MAKE_CALL'
+            dialogOpen = true;
+            dialog.dialog("open");
+        });
+
+        $("#ConsultCallBtn").on("click", function() {
+            typeOfDial = 'CONSULT_CALL'
+            dialogOpen = true;
+            dialog.dialog("open");
+        });
+
+        $("#SSTTransferBtn").on("click", function() {
+            typeOfDial = 'TRANSFER_SST'
+            dialogOpen = true;
+            dialog.dialog("open");
+        });
+
+        $.fn.getCursorPosition = function() {
+            var input = this.get(0);
+            if (!input) return; // No (input) element found
+            if ('selectionStart' in input) {
+                // Standard-compliant browsers
+                return input.selectionStart;
+            } else if (document.selection) {
+                // IE
+                input.focus();
+                var sel = document.selection.createRange();
+                var selLen = document.selection.createRange().text.length;
+                sel.moveStart('character', -input.value.length);
+                return sel.text.length - selLen;
+            }
+        }
+
+        $('.button').on('click', function() {
+            var ele = $(this).find('.number');
+            if (ele.length) {
+                //numberToDial.val( numberToDial.val() + ele.text() );
+
+                cursorPos = $("#numberToDial").getCursorPosition();
+                var currTxt = numberToDial.val();
+
+                numberToDial.val(currTxt.substring(0, cursorPos) + ele.text() + currTxt.substring(cursorPos));
+                cursorPos = cursorPos + ele.length;
+                numberToDial.selectionStart = cursorPos;
+                numberToDial.focus();
+
+            }
+        });
+
+        // Keep the cursor from jumping to the end.
+        $("#numberToDial").on('focus', function() {
+            this.selectionStart = cursorPos;
+            this.selectionEnd = cursorPos;
+        });
+
+        $('#recentCallList').on('change', function() {
+            var num = "";
+            $("#recentCallList option:selected").each(function() {
+                num += $(this).text() + " ";
+            });
+
+            numberToDial.val(num.trim());
+        });
+
+
+        $('#phoneBookList').on('change', function() {
+            var selectedPBId = $(this).val();
+            var phoneBooks = cadi.modules.FinesseIPCLSAPI.getPhoneBooks();
+            var phoneBookCollection = phoneBooks.PhoneBook,
+                restPhoneBook, restContact, contact, restContacts, i;
+
+            // Clear the current table entries
+            $('#phoneBookTable tbody > tr').remove();
+
+            restPhoneBook = phoneBookCollection[selectedPBId];
+
+            // loop contacts within each phonebook
+            restContacts = restPhoneBook.contacts;
+            if (restContacts !== null && restContacts.Contact) {
+                restContacts = restContacts.Contact;
+                // if only 1 contact in the phonebook, it will show up as a single object instead of an array
+                // making it a 1 element array keeps it simple
+                if (!(restContacts instanceof Array)) {
+                    restContacts = [restContacts];
+                }
+
+                for (i = 0; i < restContacts.length; i++) {
+                    restContact = restContacts[i];
+                    contact = {
+                        phoneBook: restPhoneBook.name,
+                        uri: restContact.uri,
+                        lastName: restContact.lastName,
+                        firstName: restContact.firstName,
+                        phoneNumber: restContact.phoneNumber,
+                        description: restContact.description
+                    };
+                    // display the contact
+                    $('#phoneBookTable > tbody:last').append('<tr class="clickable-row"><td>' + contact.firstName + '</td><td>' + contact.lastName + '</td><td class="phoneNum">' + contact.phoneNumber + '</td><td>' + restContact.description + '</td></tr>');
+                }
+
+            }
+
+        });
+
+        $('#phoneBookTable').delegate('tr', 'click', function(event) {
+            var num = $(this).find('.phoneNum').text();
+            if (num) {
+                numberToDial.val(num.trim());
+            }
+        });
+
+        $.fn.tableSearch = function(options) {
+            if (!$(this).is('table')) {
+                return;
+            }
+            var tableObj = $(this),
+                //searchText = (options.searchText)?options.searchText:'Search: ',
+                //searchPlaceHolder = (options.searchPlaceHolder)?options.searchPlaceHolder:'',
+                //divObj = $('<div style="float:right;">'+searchText+'</div><br /><br />'),
+                //inputObj = $('<input type="text" placeholder="'+searchPlaceHolder+'" />'),
+                inputObj = $('#searchPhoneBook'),
+                caseSensitive = (options.caseSensitive === true) ? true : false,
+                searchFieldVal = '',
+                pattern = '';
+            inputObj.off('keyup').on('keyup', function() {
+                searchFieldVal = $(this).val();
+                pattern = (caseSensitive) ? RegExp(searchFieldVal) : RegExp(searchFieldVal, 'i');
+                tableObj.find('tbody tr').hide().each(function() {
+                    var currentRow = $(this);
+                    currentRow.find('td').each(function() {
+                        if (pattern.test($(this).html())) {
+                            currentRow.show();
+                            return false;
+                        }
+                    });
+                });
+            });
+            //tableObj.before(divObj.append(inputObj));
+            return tableObj;
+        }
+
+        $('table.search-table').tableSearch({
+            searchText: 'Search Table',
+            searchPlaceHolder: 'Input Value'
+        });
+
+        // This is supposed to freese the header and give a vertical scrollbar, but it isn't working.
+        //$('#phoneBookTable').freezeHeader({ 'height': '150px' });
+
+    });
+
+    // Functionality for the WrapupReasonCode Dialog
+    $(function() {
+        var dialog, form, dialogOpen,
+
+            wrapupReasonList = $("#wrapupReasonList"),
+            allFields = $([]).add(wrapupReasonList);
+
+
+        function setWrapup() {
+            allFields.removeClass("ui-state-error");
+            var reasonCodeLabel = $("#wrapupReasonList").val();
+
+            cadi.modules.FinesseIPCLSAPI.updateWrapUpReason({
+                'wrapupReason': reasonCodeLabel
+            });
+
+            dialog.dialog("close");
+            dialogOpen = false;
+
+            return true;
+        }
+
+        dialog = $("#wrapup-dialog-form").dialog({
+            autoOpen: false,
+            height: 300,
+            width: 350,
+            modal: true,
+            buttons: {
+                "Ok": setWrapup,
+                Cancel: function() {
+                    dialog.dialog("close");
+                    dialogOpen = false;
+                }
+            },
+            close: function() {
+                form[0].reset();
+                allFields.removeClass("ui-state-error");
+                dialogOpen = false;
+            }
+        });
+
+        form = dialog.find("form").on("submit", function(event) {
+            event.preventDefault();
+            setWrapup();
+        });
+
+        $("#WrapupBtn").on("click", function() {
+            var wrapupReasons = cadi.modules.FinesseIPCLSAPI.getWrapupReasons();
+
+            if ($.isArray(wrapupReasons) && wrapupReasons.length > 0) {
+                $("#wrapupReasonList").empty();
+
+                // It is an array. So loop the array to retrieve the NotReady Reason Codes.
+                var idx;
+                for (idx = 0; idx < wrapupReasons.length; idx++) {
+                    var reason = wrapupReasons[idx];
+                    if (reason !== null && reason !== undefined)
+                        $('#wrapupReasonList').append('<option>' + reason.label + '</option>');
+                }
+
+                //Check to make sure the list has anything, if not don't show the dialog 
+                if ($('#wrapupReasonList').has('option').length > 0) {
+
+                    dialogOpen = true;
+                    dialog.dialog("open");
+                }
+            }
+
+        });
+
+    }); // end of WrapupReasonCode Dialog
+
+
+
+    $(document).ready(function() {
+
+        cadi.modules.FinesseIPCLSAPI.init(OnEventCallback);
+        console.log("page ready!");
+
+    });
+
+</script>
+
+</html>

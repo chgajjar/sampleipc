@@ -1,0 +1,116 @@
+<!-- **
+ * Cisco Finesse Interprocess Communication using Local Storage - Proxy Page
+ * Version 11.5
+ * Custome Application Development and Integration (CADI) 
+ * Advanced Services
+ * Cisco Systems, Inc.
+ * http://www.cisco.com/
+ *
+ * Portions created or assigned to Cisco Systems, Inc. are
+ * Copyright (c) 2017 Cisco Systems, Inc. or its affiliated entities.  All Rights Reserved.
+ */
+/**
+ * This HTML and Javascript is made available to Cisco partners and customers as
+ * a convenience to help minimize the cost of Cisco Finesse integration and customizations.
+ * This library can be used in Cisco Finesse deployments.  Cisco does not
+ * permit the use of this library in customer deployments that do not include
+ * Cisco Finesse.  Support for the HTML and JavaScript is provided if customer has purchase 
+ * Day 2 Support from the CADI team. Like any custom deployment, it is the
+ * responsibility of the partner and/or customer to ensure that the
+ * customization works correctly and this includes ensuring that the Cisco
+ * Finesse IPC API JavaScript and Proxy Page HTML is properly integrated into 
+ * 3rd party applications.
+ * 
+ * Cisco reserves the right to make changes to the HTML and JavaScript code and
+ * corresponding API as part of the normal Cisco Finesse release cycle.  The
+ * implication of this is that new versions of the JavaScript might be
+ * incompatible with applications built on older Finesse integrations.  That
+ * said, it is Cisco's intention to ensure JavaScript compatibility across
+ * versions as much as possible and Cisco will make every effort to clearly
+ * document any differences in the JavaScript across versions in the event
+ * that a backwards compatibility impacting change is made.
+ */ -->
+<html>
+
+<head>
+
+<title>Proxy Web Page that is Child iFrame within the IPC Gadget</title>
+
+</head>
+
+<body>
+
+<h1>iFrame uses PostMessage to commuicate to the Finesse Gadget and LocalStorage to other Browser Windows</h1>
+
+<br></br>
+
+<label for="todata">To Data:</label>
+<textarea id="todata" rows="10" cols="80"></textarea>
+<!-- <input type="text" id="todata" /> -->
+
+<br></br>
+
+<label for="fromdata">From Data:</label>
+<textarea id="fromdata" rows="3" cols="80"></textarea>
+<!-- <input type="text" id="fromdata" /> -->
+
+<script type="text/javascript">
+
+    // message handler to handle messages from Finesse Gadget that need to pass to listeners.
+    function postMsgReceiver(event) {
+
+        document.getElementById("todata").value = event.data;
+    
+        message_broadcast(event.data);
+    
+    }
+
+    function lsMsgReceiver(ev) {
+
+        var message;
+
+        if (ev.key !== 'messageToFinesse')
+        {
+            return; // ignore other keys
+        }
+
+        if (!ev.newValue)
+        {
+            return; // ignore empty msg or msg reset
+        }
+
+        message = JSON.parse(ev.newValue);
+
+        if (!message) 
+        {
+            return; // ignore empty msg or msg reset
+        }
+
+
+          document.getElementById("fromdata").value = JSON.stringify(message);
+          // window.parent.postMessage(sendData,"https://ucc10afinesse110.ucc10adom.local");
+          //window.parent.postMessage(message,"https://ucce115finesse.ucce115a.local");
+          window.parent.postMessage(message,"*");
+
+
+    }
+
+
+    function message_broadcast(message) {
+		//localStorage.setItem('messageFromFinesse',JSON.stringify(message));
+		localStorage.setItem('messageFromFinesse',message);
+		localStorage.removeItem('messageFromFinesse');
+    }
+		
+	// add listener for messages from Finesse Gadget web page
+	window.addEventListener("message", postMsgReceiver, false);
+	
+	// add listener for messages from child web page
+	window.addEventListener("storage", lsMsgReceiver);
+
+</script>
+
+</body>
+
+</html>
+

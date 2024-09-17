@@ -1,0 +1,140 @@
+#dialogsTable, #dialogsTable th, #dialogsTable td {
+    border: 1px solid black;
+}
+
+#myBody tr:hover { 
+    background: lightblue; 
+    cursor: pointer;
+}
+
+#myBody tr.currSelected {
+     background: lightblue; 
+}
+
+button[disabled] {
+  opacity: 0.65; 
+  cursor: not-allowed;
+}
+
+fieldset {
+    float: left;
+}
+
+
+.dialpad {
+  width: 197px;
+  height: 151px;
+  margin: 12px auto;
+  border: 1px solid silver;
+  border-radius: 4px;
+  padding: 2px;
+  text-align: center;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+    }
+
+
+form {
+    margin-bottom: 9px;
+}
+
+.letters {
+    font-size: 12px;
+    color: gray;
+    position: absolute;
+    margin: -10px 0 0 12px;
+}
+
+.letters-4 {
+    font-size: 12px;
+    color: gray;
+    position: absolute;
+    margin: -10px 0 0 10px;
+}
+
+
+ #wrapper {
+    width: 225px;
+    padding-bottom: 50px;
+    margin: 0 auto;
+    max-height: 500px;
+    overflow-y: auto;
+    overflow-x: none;
+}
+
+#number {
+    width: 199px;
+    height: 25px;
+    border-radius: 7px;
+    font-size: 16px;
+    text-align: center;
+    letter-spacing: 0.1em;
+}
+
+.button {
+    position: relative;
+    height: 25px;
+    width: 50px;
+    border: 1px solid black;
+    border-radius: 6px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    background: linear-gradient(to bottom,rgba(255,255,255,1) 0%, rgba(241,241,241,1) 50%, rgba(225,225,225,1) 51%, rgba(246,246,246,1) 100%);
+}
+
+.button:hover {
+    background: linear-gradient(to bottom, rgba(246,246,246,1) 0%, rgba(225,225,225,1) 44%, rgba(241,241,241,1) 91%,rgba(255,255,255,1) 100%); 
+    cursor: pointer;
+}
+
+.button:active {
+    background: linear-gradient(to bottom,rgba(246,246,246,1) 0%, rgba(225,225,225,1) 0%, rgba(241,241,241,1) 100%); 
+} 
+
+#col1,#col11  { width: 70%; float: left;}
+#col2 {width: 30%; float: right;}
+#col12 {padding-top: 15px; width: 50%; float: left;}
+#col13 {padding-top: 15px; width: 50%; float: right;}
+
+
+table.sortable thead {
+     background-color: #4489b6;
+     padding: 2px;
+     color: white;
+     cursor: default;
+     font: 13px arial,sans-serif;
+}
+
+table.sortable tbody {
+         color: black;
+}
+
+table.sortable { 
+        border-top: 1px solid #f2f2f2;
+        overflow: auto;
+        width: 100%;
+}
+
+table.sortable td {
+         font: 12px arial,sans-serif;
+         padding: 2px;
+         text-align: center;
+}
+
+table.sortable td + td {
+         border-left: 1px solid #cccccc;
+}
+
+table.sortable th + td {
+         border-left: 1px solid #cccccc;
+}
+
+table.sortable tbody tr:nth-child(odd) {background: rgba(229, 229, 229, 1)}
+
+#phoneBookTable tr:hover {
+    background-color: #ccc;
+}
+
+#phoneBookTable td:hover {
+    cursor: pointer;
+}
