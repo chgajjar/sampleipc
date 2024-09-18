@@ -101,7 +101,7 @@
 
         hasAccess = await document.hasStorageAccess();
         if (hasAccess) {
-            handle = await document.requestStorageAccess();
+            handle = await document.requestStorageAccess({localStorage: true});
             handle.localStorage.setItem('messageFromFinesse',message);
             console.log("Item Set");
             handle.localStorage.removeItem('messageFromFinesse');
@@ -109,7 +109,7 @@
         } else {
             alert("Please approve the storage access!");
             try {
-                handle = await document.requestStorageAccess();
+                handle = await document.requestStorageAccess({localStorage: true});
                 hasAccess = true;
               } catch (err) {
                 console.log("Access was not granted" + err);
