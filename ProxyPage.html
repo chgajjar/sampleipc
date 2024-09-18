@@ -101,6 +101,7 @@
 
         hasAccess = await document.hasStorageAccess();
         if (hasAccess) {
+            handle = await document.requestStorageAccess();
             handle.localStorage.setItem('messageFromFinesse',message);
             console.log("Item Set");
             handle.localStorage.removeItem('messageFromFinesse');
