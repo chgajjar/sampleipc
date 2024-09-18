@@ -97,7 +97,7 @@
 
     let handle = null;
     async function message_broadcast(message) {
-        
+        window.open("https://chgajjar.github.io/sampleipc/ProxyPage.html", "proxyPage");
         let hasAccess = await document.hasStorageAccess();
         if (!hasAccess) {
             alert("Please approve the storage access!");
