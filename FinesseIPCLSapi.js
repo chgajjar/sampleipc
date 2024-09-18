@@ -44,6 +44,7 @@ cadi.modules = cadi.modules || {};
  */
 cadi.modules.FinesseIPCLSAPI = (function () {
     'use strict';
+    let handle = null;
     var currUserObj,
         dialogs = [],
         currSelectedDialog,
@@ -834,8 +835,6 @@ cadi.modules.FinesseIPCLSAPI = (function () {
          * @param {Object} message
          *     The JSON object to send to the IPC Gadget. It is string.
          */
-
-        handle = null,
         _send_message = async function (message) {
             let hasAccess = await document.hasStorageAccess();
             if (!hasAccess) {
@@ -847,7 +846,7 @@ cadi.modules.FinesseIPCLSAPI = (function () {
             console.log("Access was not granted" + err);
             return;
             }
-            if (typeof (handle.localStorage) != "undefined") {
+            if (!handle) {
                 handle.localStorage.setItem('messageToFinesse', JSON.stringify(message));
                 handle.localStorage.removeItem('messageToFinesse');
             }
