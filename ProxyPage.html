@@ -96,23 +96,26 @@
     }
 
     let handle = null;
+    let hasAccess = false;
     async function message_broadcast(message) {
-        
-        if (!handle) {
-            try {
-              handle = await document.requestStorageAccess({localStorage: true});
-            } catch (err) {
-                console.log("Access was not granted");
-              return;
-            }
-          }
 
-		//localStorage.setItem('messageFromFinesse',JSON.stringify(message));
-		handle.localStorage.setItem('messageFromFinesse',message);
-        console.log("Item Set");
-		handle.localStorage.removeItem('messageFromFinesse');
-        console.log("Item Removed");
-    }
+        hasAccess = await document.hasStorageAccess();
+        if (hasAccess) {
+            handle.localStorage.setItem('messageFromFinesse',message);
+            console.log("Item Set");
+            handle.localStorage.removeItem('messageFromFinesse');
+            console.log("Item Removed");
+        } else {
+            alert("Please approve the storage access!");
+            try {
+                handle = await document.requestStorageAccess();
+                hasAccess = true;
+              } catch (err) {
+                console.log("Access was not granted" + err);
+                return;
+              }
+        }
+     }
 		
 	// add listener for messages from Finesse Gadget web page
 	window.addEventListener("message", postMsgReceiver, false);
